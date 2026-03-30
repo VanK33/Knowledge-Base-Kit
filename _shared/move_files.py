@@ -3,10 +3,12 @@
 Conflict-aware file mover for config-driven file routing.
 
 Input (stdin): JSON array of move instructions:
-  [{"source": "/path/to/file.md", "target": "/path/to/dest.md", "skip_move": false}, ...]
+  [{"source": "/path/file.md", "target": "/dest/file.md"}, ...]
 
-Output (stdout): JSON array of results:
-  [{"source": "...", "target": "...", "status": "moved|duplicate|skipped|conflict_binary|conflict_md_incoming_superset|conflict_md_existing_superset|conflict_md_diverged", "detail": "..."}, ...]
+Output (stdout): JSON array of results with status field:
+  moved, duplicate, skipped, conflict_binary,
+  conflict_md_incoming_superset, conflict_md_existing_superset,
+  conflict_md_diverged
 
 Auto-resolved statuses (no intervention needed):
   - moved: file moved successfully
@@ -163,7 +165,11 @@ def main():
 
     results = []
     for instr in instructions:
-        if not isinstance(instr, dict) or "source" not in instr or "target" not in instr:
+        if (
+            not isinstance(instr, dict)
+            or "source" not in instr
+            or "target" not in instr
+        ):
             results.append({
                 "source": instr.get("source", "?"),
                 "target": instr.get("target", "?"),

@@ -2,8 +2,8 @@
 """
 SessionStart Dispatcher — run all startup scripts in parallel.
 
-Register this single hook in settings.json. Internal scripts are managed in the
-SCRIPTS list below. Each script runs in parallel; individual failures don't affect others.
+Register this single hook in settings.json. Internal scripts are managed
+in the SCRIPTS list below. Each runs in parallel; failures are isolated.
 
 Usage:
   Direct:    python3 hooks/session-start-dispatcher.py
@@ -28,7 +28,7 @@ GLOBAL_TIMEOUT = 30
 # ============================================================
 # Register SessionStart scripts here
 # ============================================================
-# Format: { "name": display_name, "command": command, "timeout": per-script_timeout_seconds }
+# Format: {"name": ..., "command": ..., "timeout": seconds}
 #
 # Variables available in command:
 #   {scripts_dir} → directory containing this dispatcher
@@ -138,10 +138,12 @@ def main():
     for r in results:
         status = "OK" if r["ok"] else "FAIL"
         err = f' — {r["stderr"]}' if r["stderr"] else ""
-        log(f"  {status} {r['name']}: {r['elapsed']:.2f}s (exit {r['returncode']}){err}")
+        rc = r["returncode"]
+        log(f"  {status} {r['name']}: {r['elapsed']:.2f}s (exit {rc}){err}")
 
     ok_count = sum(1 for r in results if r["ok"])
-    log(f"=== dispatcher done: {ok_count}/{len(results)} ok, total {total_elapsed:.2f}s ===")
+    n = len(results)
+    log(f"=== dispatcher done: {ok_count}/{n} ok, {total_elapsed:.2f}s ===")
 
 
 if __name__ == "__main__":

@@ -48,7 +48,11 @@ def build_tree_mocs(
     root_dir.mkdir(parents=True, exist_ok=True)
     summary = MOCSummary(root_dir=root_dir)
     excluded = set(exclude_dir_names)
-    extensions = set(indexable_extensions) if indexable_extensions else DEFAULT_INDEXABLE_EXTENSIONS
+    extensions = (
+        set(indexable_extensions)
+        if indexable_extensions
+        else DEFAULT_INDEXABLE_EXTENSIONS
+    )
 
     directories = [root_dir]
     directories.extend(_iter_child_dirs(root_dir, excluded))
@@ -88,7 +92,11 @@ def _iter_child_dirs(root_dir: Path, exclude_dir_names: set[str]) -> list[Path]:
     while queue:
         current = queue.pop(0)
         for path in sorted(current.iterdir(), key=lambda child: child.name):
-            if not path.is_dir() or path.name.startswith(".") or path.name in exclude_dir_names:
+            if (
+                not path.is_dir()
+                or path.name.startswith(".")
+                or path.name in exclude_dir_names
+            ):
                 continue
             result.append(path)
             queue.append(path)
@@ -101,7 +109,9 @@ def _subdirs(directory: Path, exclude_dir_names: set[str]) -> list[Path]:
         (
             path
             for path in directory.iterdir()
-            if path.is_dir() and not path.name.startswith(".") and path.name not in exclude_dir_names
+            if path.is_dir()
+            and not path.name.startswith(".")
+            and path.name not in exclude_dir_names
         ),
         key=lambda path: path.name,
     )
@@ -168,8 +178,8 @@ def _build_moc_content(
             note_count = len(_note_files(subdir, indexable_extensions))
             child_count = len(_subdirs(subdir, exclude_dir_names))
             lines.append(
-                f"- [[{_wikilink(subdir / f'{subdir.name}.md', vault_root)}|{subdir.name}]]"
-                f" - {note_count} notes - {child_count} subdirs"
+                f"- [[{_wikilink(subdir / f'{subdir.name}.md', vault_root)}"
+                f"|{subdir.name}]] - {note_count} notes - {child_count} subdirs"
             )
         lines.append("")
 

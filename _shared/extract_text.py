@@ -22,7 +22,6 @@ For .png/.jpg/.jpeg — use Claude's Read tool (OCR) instead of this script.
 """
 
 import csv
-import io
 import json
 import sys
 from pathlib import Path
@@ -33,7 +32,7 @@ def extract_docx(path: Path) -> str:
     try:
         from docx import Document
     except ImportError:
-        return f"[extract_text] python-docx not installed. Run: pip install python-docx"
+        return "[extract_text] python-docx not installed. Run: pip install python-docx"
 
     doc = Document(str(path))
     parts = []
@@ -54,7 +53,7 @@ def extract_xlsx(path: Path) -> str:
     try:
         from openpyxl import load_workbook
     except ImportError:
-        return f"[extract_text] openpyxl not installed. Run: pip install openpyxl"
+        return "[extract_text] openpyxl not installed. Run: pip install openpyxl"
 
     wb = load_workbook(str(path), read_only=True, data_only=True)
     parts = []
@@ -74,7 +73,7 @@ def extract_pptx(path: Path) -> str:
     try:
         from pptx import Presentation
     except ImportError:
-        return f"[extract_text] python-pptx not installed. Run: pip install python-pptx"
+        return "[extract_text] python-pptx not installed. Run: pip install python-pptx"
 
     prs = Presentation(str(path))
     parts = []
@@ -88,7 +87,11 @@ def extract_pptx(path: Path) -> str:
                         slide_texts.append(text)
             if shape.has_table:
                 for row in shape.table.rows:
-                    cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+                    cells = [
+                        cell.text.strip()
+                        for cell in row.cells
+                        if cell.text.strip()
+                    ]
                     if cells:
                         slide_texts.append(" | ".join(cells))
         if slide_texts:
@@ -117,7 +120,7 @@ def extract_pdf(path: Path) -> str:
     try:
         import fitz  # PyMuPDF
     except ImportError:
-        return f"[extract_text] PyMuPDF not installed. Run: pip install PyMuPDF"
+        return "[extract_text] PyMuPDF not installed. Run: pip install PyMuPDF"
 
     doc = fitz.open(str(path))
     parts = []
@@ -174,7 +177,8 @@ def extract(file_path: str) -> str:
     extractor = EXTRACTORS.get(ext)
 
     if extractor is None:
-        return f"[extract_text] Unsupported format: {ext}. Supported: {', '.join(sorted(EXTRACTORS.keys()))}"
+        supported = ", ".join(sorted(EXTRACTORS.keys()))
+        return f"[extract_text] Unsupported: {ext}. Supported: {supported}"
 
     try:
         return extractor(path)
