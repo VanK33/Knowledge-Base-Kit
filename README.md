@@ -1,23 +1,33 @@
 # AgentKit
 
-A config-driven skill framework for [Claude Code](https://claude.ai/claude-code) — intelligent file routing, self-learning rules, structured memory, and session lifecycle management.
+A file routing system for [Claude Code](https://claude.ai/claude-code) that learns your rules as you use it.
+
+You tell it once where something should go. Next time, it just does it.
 
 ```
 Inbox/ → [inbox-processor] → match plugins → dispatch/move → clean
                 ↓ no match
-         [config-learner] → persist new rule → next time auto-match
+         ask you → [config-learner] → save rule → next time auto-match
 ```
 
-## What It Does
+## Why This Exists
 
-AgentKit provides a set of reusable **skills** (prompt-based capabilities) for Claude Code that turn your knowledge base into an automated knowledge management system:
+I dump a lot of stuff into my knowledge base every day — voice memo transcripts, screenshots, PDFs, meeting notes, random thoughts. They all land in `Inbox/` and sit there until I sort them manually.
 
-- **inbox-processor** — Config-driven file router. Drop files into `Inbox/`, and plugins match them by filename, regex, extension, or content hints, then dispatch to handler skills or move to target directories.
-- **config-learner** — Runtime rule learning. When inbox encounters an unknown file, it asks you once, then remembers the rule forever.
-- **memory-hierarchy** — Structured memory management. Scans diary/inbox for TODOs, maintains decisions, preferences, lessons, and project records with semantic deduplication.
-- **save-clear** — Session lifecycle. Exports conversations to your knowledge base before clearing context, with automatic memory extraction.
+So I built a system: drop files in, run one command, everything routes itself. When it sees something new, it asks me where it should go, then remembers the answer. After a couple weeks of this, 95%+ of my files route automatically.
 
-Plus reusable **agent templates** (researcher, coder, checker) and **session hooks** for startup/shutdown automation.
+The core idea: **you shouldn't have to organize the same kind of file twice**. Tell the system once, it handles the rest.
+
+This grew out of my daily Claude Code workflow — I wanted something that actually gets smarter with use, not just a static script. The whole thing is config-driven, so you can adapt it to whatever your own workflow looks like.
+
+## What's Inside
+
+- **inbox-processor** — The main thing. Scans your Inbox, matches files against plugin rules (by filename, regex, extension, or content), then moves them or hands them off to other skills. Supports OCR for images, text extraction for docx/xlsx/pptx.
+- **config-learner** — When inbox hits an unknown file, you tell it what to do, it writes the rule to config.json. You never answer the same question twice.
+- **memory-hierarchy** — Keeps track of your decisions, lessons learned, and TODOs across sessions. Scans your diary and inbox for new items, deduplicates against what's already recorded.
+- **save-clear** — Exports your conversation to your knowledge base before clearing context. Also extracts any decisions or lessons worth keeping.
+
+Plus **agent templates** (researcher, coder, checker) and **session hooks** for startup/shutdown automation.
 
 ## Architecture
 
@@ -35,42 +45,43 @@ graph TD
     Hooks[Session Hooks] -->|start| Dispatcher[Parallel Dispatcher]
 ```
 
-### Design Patterns
+### How the pieces fit together
 
-| Pattern | Where | What |
-|---------|-------|------|
+| Pattern | Where | What it does |
+|---------|-------|-------------|
 | **Config-driven routing** | inbox-processor | JSON plugins with priority, match criteria, actions |
-| **Self-learning** | config-learner | User decisions auto-persist as new plugin rules |
-| **Conflict-aware file ops** | move_files.py | Auto-resolves duplicates/supersets, flags diverged content |
-| **Structured memory** | memory-hierarchy | Atomic entries with semantic dedup |
+| **Self-learning** | config-learner | Your decisions auto-persist as new rules |
+| **Conflict-aware moves** | move_files.py | Detects duplicates and supersets, flags real conflicts |
+| **Structured memory** | memory-hierarchy | Atomic entries, semantic dedup, append-only |
 | **Session lifecycle** | hooks/ | Parallel startup scripts, conversation export |
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed design documentation.
+More detail in [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Quick Start
 
 ```bash
-# 1. Clone
-git clone https://github.com/youruser/agentkit.git
-cd agentkit
-
-# 2. Install
+git clone https://github.com/VanK33/Knowledge-Base-Kit.git
+cd Knowledge-Base-Kit
 chmod +x setup.sh
 ./setup.sh
-
-# 3. Test — drop a file into your knowledge base's Inbox/, then in Claude Code:
-/inbox-processor
 ```
 
-The setup script will:
-- Ask for your knowledge base path
-- Symlink skills to `~/.claude/skills/`
-- Create config files from examples
-- Optionally install agent templates and hooks
+The setup asks for your knowledge base path, symlinks everything to `~/.claude/skills/`, and creates config files from the examples.
+
+Then drop a file into your Inbox and run `/inbox-processor` in Claude Code.
+
+## Real Example
+
+Say your Inbox has three files:
+- `2026-03-30-standup.md` — matched by `filename_regex` → moves to `Meetings/`
+- `Q1-report.pdf` — matched by `content_hints` (finds "quarterly revenue" inside) → moves to `Reports/`
+- `random-screenshot.png` — no match → OCR reads the image, still no match → asks you → you say "Screenshots/" → config-learner saves the rule
+
+Next time a `.png` shows up with similar content, it goes to `Screenshots/` automatically.
 
 ## Plugin System
 
-Plugins are JSON objects that define how files get matched and routed:
+Plugins are just JSON. Here's what one looks like:
 
 ```json
 {
@@ -79,56 +90,52 @@ Plugins are JSON objects that define how files get matched and routed:
   "filename_regex": "\\d{4}-\\d{2}-\\d{2}.*meeting",
   "extension": [".md"],
   "content_hints": ["attendees", "action items", "agenda"],
-  "tags": ["meetings"],
   "move_to": "Meetings/"
 }
 ```
 
-**Match logic** (short-circuit, first match wins):
-1. `filename_contains` → keyword match (fast path)
+Match logic is short-circuit — first match wins:
+1. `filename_contains` → keyword hit in the filename
 2. `filename_regex` → regex on filename
-3. `extension` → filter by file type
-4. `content_hints` → OCR images, read PDFs/markdown for patterns
+3. `extension` → file type filter
+4. `content_hints` → actually reads the file (OCR for images, text extraction for Office docs)
 
-**Actions**: `move_to` (file routing), `handler_skill` (invoke another skill), or `actions` array (multi-step).
+You can write plugins by hand, or just let config-learner build them for you as you go.
 
-See [examples/inbox-plugins/](examples/inbox-plugins/) for pre-built configs for different personas.
+Pre-built configs for different workflows: [examples/inbox-plugins/](examples/inbox-plugins/)
 
 ## Project Structure
 
 ```
 agentkit/
-├── _shared/                    # Shared infrastructure
+├── _shared/                    # Shared infra
 │   ├── user_config.py          # 3-layer config loader
 │   ├── move_files.py           # Conflict-aware file mover
-│   └── moc_builder.py          # MOC generator
+│   ├── extract_text.py         # Text extraction (docx/xlsx/pptx)
+│   └── moc_builder.py          # Directory index generator
 ├── skills/                     # Core skills
 │   ├── inbox-processor/        # File routing engine
 │   ├── config-learner/         # Runtime rule learning
 │   ├── memory-hierarchy/       # Structured memory
 │   └── save-clear/             # Session export + memory update
 ├── agents/                     # Agent templates
-│   ├── researcher.md           # Focused Q&A research
-│   ├── coder.md                # TDD implementation
-│   └── checker.md              # Code review (read-only)
 ├── hooks/                      # Session lifecycle
-│   └── session-start-dispatcher.py
 ├── examples/                   # Pre-built configs
 └── docs/                       # Documentation
 ```
 
 ## Configuration
 
-Three-layer config resolution (each layer overrides the previous):
+Three layers, each overrides the previous:
 
-1. **Framework defaults** — `_shared/user_config.py` `DEFAULT_CONFIG`
-2. **User config** — `_shared/user-config.json` (gitignored, created from example)
-3. **Local overrides** — `_shared/user-config.local.json` (machine-specific)
+1. **Defaults** in `user_config.py` — sensible out of the box
+2. **Your config** in `user-config.json` — your paths, your preferences
+3. **Local overrides** in `user-config.local.json` — machine-specific stuff
 
 ```json
 {
   "paths": {
-    "vault_root": "~/MyVault",
+    "vault_root": "~/MyKnowledgeBase",
     "inbox_folder": "Inbox"
   },
   "automation": {
@@ -138,20 +145,19 @@ Three-layer config resolution (each layer overrides the previous):
 }
 ```
 
-## Writing Your Own Plugins
+## Docs
 
-1. Add a plugin entry to `~/.claude/skills/inbox-processor/config.json`
-2. Or let config-learner do it — just drop an unmatched file and tell Claude how to handle it
-3. For complex processing, create a handler skill and reference it via `handler_skill`
-
-See [docs/writing-custom-plugins.md](docs/writing-custom-plugins.md) for the full guide.
+- [Getting Started](docs/getting-started.md) — install → first inbox run
+- [Config Reference](docs/config-reference.md) — every option explained
+- [Writing Custom Plugins](docs/writing-custom-plugins.md) — plugin schema and match logic
+- [Skill Development Guide](docs/skill-development-guide.md) — build your own skills
 
 ## Requirements
 
-- [Claude Code](https://claude.ai/claude-code) CLI or desktop app
+- [Claude Code](https://claude.ai/claude-code)
 - Python 3.10+
-- A knowledge base directory (e.g., Obsidian vault or any directory structure)
+- Any directory you want to organize (Obsidian vault, plain folders, whatever)
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT
