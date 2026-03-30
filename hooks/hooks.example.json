@@ -1,0 +1,17 @@
+{
+  "$comment": "Add this to your ~/.claude/settings.json under the 'hooks' key",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 <path-to-agentkit>/hooks/session-start-dispatcher.py",
+            "timeout": 35
+          }
+        ]
+      }
+    ]
+  }
+}

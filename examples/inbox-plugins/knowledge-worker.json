@@ -1,0 +1,49 @@
+{
+  "paths": {
+    "inbox": "~/MyKnowledgeBase/Inbox",
+    "unsorted": "~/MyKnowledgeBase/Inbox/_unsorted"
+  },
+  "default_action": "move_to_unsorted",
+  "classify_unknown_images": true,
+  "ask_when_uncertain": true,
+  "plugins": [
+    {
+      "name": "meeting-notes",
+      "priority": 10,
+      "filename_regex": "\\d{4}-\\d{2}-\\d{2}.*meeting|standup|retro",
+      "extension": [".md"],
+      "tags": ["meetings"],
+      "move_to": "Work/Meetings"
+    },
+    {
+      "name": "voice-memo",
+      "priority": 20,
+      "filename_contains": ["voice", "memo", "transcript", "recording"],
+      "tags": ["memos"],
+      "handler_skill": "voice-memo-processor"
+    },
+    {
+      "name": "project-docs",
+      "priority": 30,
+      "extension": [".md", ".pdf"],
+      "content_hints": ["project plan", "PRD", "requirements", "specification", "design doc"],
+      "tags": ["projects"],
+      "move_to": "Work/Projects"
+    },
+    {
+      "name": "receipts",
+      "priority": 40,
+      "extension": [".png", ".jpg", ".jpeg", ".pdf"],
+      "content_hints": ["receipt", "invoice", "total", "tax", "payment"],
+      "tags": ["finance"],
+      "move_to": "Finance/Receipts"
+    },
+    {
+      "name": "screenshots",
+      "priority": 50,
+      "extension": [".png", ".jpg", ".jpeg"],
+      "tags": ["visual"],
+      "move_to": "Screenshots"
+    }
+  ]
+}

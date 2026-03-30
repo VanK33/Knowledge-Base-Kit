@@ -1,0 +1,42 @@
+{
+  "paths": {
+    "inbox": "~/MyKnowledgeBase/Inbox",
+    "unsorted": "~/MyKnowledgeBase/Inbox/_unsorted"
+  },
+  "default_action": "move_to_unsorted",
+  "classify_unknown_images": true,
+  "ask_when_uncertain": true,
+  "plugins": [
+    {
+      "name": "arxiv-paper",
+      "priority": 10,
+      "extension": [".pdf"],
+      "content_hints": ["arXiv", "Abstract", "Introduction", "Related Work"],
+      "tags": ["papers"],
+      "move_to": "Papers/_sources"
+    },
+    {
+      "name": "reading-notes",
+      "priority": 20,
+      "extension": [".md"],
+      "content_hints": ["key takeaways", "methodology", "contribution", "limitations"],
+      "tags": ["notes"],
+      "move_to": "Papers/Reading Notes"
+    },
+    {
+      "name": "lecture-slides",
+      "priority": 30,
+      "extension": [".pdf", ".pptx"],
+      "filename_contains": ["lecture", "slides", "class"],
+      "tags": ["lectures"],
+      "move_to": "Courses/Slides"
+    },
+    {
+      "name": "reference-bibtex",
+      "priority": 40,
+      "extension": [".bib"],
+      "tags": ["references"],
+      "move_to": "Papers/_references"
+    }
+  ]
+}

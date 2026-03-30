@@ -1,0 +1,26 @@
+{
+  "paths": {
+    "vault_root": "~/MyKnowledgeBase",
+    "inbox_folder": "Inbox",
+    "unsorted_folder": "Inbox/_unsorted",
+    "archives_folder": "archives/claude-logs",
+    "paper_notes_folder": "Research/Papers",
+    "daily_papers_folder": "Research/DailyPapers",
+    "concepts_folder": "_concepts"
+  },
+  "inbox_processor": {
+    "default_action": "move_to_unsorted",
+    "classify_unknown_images": true,
+    "ask_when_uncertain": true,
+    "semantic_search_fallback": true
+  },
+  "memory": {
+    "memory_dir": "~/.claude/memory",
+    "dedup_threshold": 0.7
+  },
+  "automation": {
+    "auto_refresh_indexes": true,
+    "git_commit": false,
+    "git_push": false
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "paths": {
+    "inbox": "~/MyKnowledgeBase/Inbox",
+    "unsorted": "~/MyKnowledgeBase/Inbox/_unsorted"
+  },
+  "default_action": "move_to_unsorted",
+  "classify_unknown_images": true,
+  "ask_when_uncertain": true,
+  "plugins": [
+    {
+      "name": "bug-report",
+      "priority": 10,
+      "extension": [".md"],
+      "content_hints": ["bug", "stack trace", "error", "crash", "exception", "reproduce"],
+      "tags": ["bugs"],
+      "move_to": "Engineering/Bugs"
+    },
+    {
+      "name": "design-doc",
+      "priority": 20,
+      "extension": [".md"],
+      "content_hints": ["design doc", "RFC", "architecture", "proposal", "ADR"],
+      "tags": ["design"],
+      "move_to": "Engineering/Design"
+    },
+    {
+      "name": "error-screenshot",
+      "priority": 30,
+      "extension": [".png", ".jpg", ".jpeg"],
+      "content_hints": ["error", "exception", "stack trace", "404", "500", "failed"],
+      "tags": ["bugs", "visual"],
+      "move_to": "Engineering/Bugs/Screenshots"
+    },
+    {
+      "name": "api-docs",
+      "priority": 40,
+      "extension": [".json", ".yaml", ".yml"],
+      "filename_contains": ["openapi", "swagger", "api-spec"],
+      "tags": ["api"],
+      "move_to": "Engineering/API"
+    },
+    {
+      "name": "config-files",
+      "priority": 50,
+      "extension": [".json", ".yaml", ".yml", ".toml", ".env"],
+      "tags": ["config"],
+      "move_to": "Engineering/Config"
+    }
+  ]
+}

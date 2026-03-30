@@ -1,0 +1,16 @@
+{
+  "paths": {
+    "vault_root": "~/MyKnowledgeBase",
+    "inbox_folder": "Inbox",
+    "unsorted_folder": "Inbox/_unsorted",
+    "archives_folder": "archives/claude-logs",
+    "paper_notes_folder": "Papers",
+    "daily_papers_folder": "DailyPapers",
+    "concepts_folder": "_concepts"
+  },
+  "automation": {
+    "auto_refresh_indexes": true,
+    "git_commit": false,
+    "git_push": false
+  }
+}

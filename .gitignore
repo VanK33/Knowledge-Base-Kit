@@ -1,0 +1,19 @@
+# User config (personal, not committed)
+_shared/user-config.json
+_shared/user-config.local.json
+
+# Skill runtime configs (created from .example.json)
+skills/*/config.json
+!skills/*/config.example.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

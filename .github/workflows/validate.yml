@@ -1,0 +1,41 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate JSON configs
+        run: |
+          echo "Validating all JSON files..."
+          find . -name "*.json" -not -path "./.git/*" | while read f; do
+            python3 -c "import json; json.load(open('$f'))" && echo "  OK: $f" || { echo "  FAIL: $f"; exit 1; }
+          done
+
+      - name: Check SKILL.md exists for each skill
+        run: |
+          echo "Checking SKILL.md presence..."
+          for dir in skills/*/; do
+            if [ ! -f "$dir/SKILL.md" ]; then
+              echo "  MISSING: $dir/SKILL.md"
+              exit 1
+            fi
+            echo "  OK: $dir/SKILL.md"
+          done
+
+      - name: Lint Python
+        run: |
+          pip install ruff
+          ruff check _shared/*.py hooks/*.py --select E,F,W

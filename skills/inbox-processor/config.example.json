@@ -1,0 +1,41 @@
+{
+  "paths": {
+    "inbox": "~/MyKnowledgeBase/Inbox",
+    "unsorted": "~/MyKnowledgeBase/Inbox/_unsorted"
+  },
+  "default_action": "move_to_unsorted",
+  "classify_unknown_images": true,
+  "ask_when_uncertain": true,
+  "plugins": [
+    {
+      "name": "pdf-report",
+      "priority": 10,
+      "extension": [".pdf"],
+      "content_hints": ["annual report", "quarterly", "10-K", "10-Q", "earnings"],
+      "tags": ["documents", "reports"],
+      "move_to": "Reports/"
+    },
+    {
+      "name": "meeting-notes",
+      "priority": 20,
+      "filename_regex": "\\d{4}-\\d{2}-\\d{2}.*meeting",
+      "extension": [".md"],
+      "tags": ["meetings"],
+      "move_to": "Meetings/"
+    },
+    {
+      "name": "voice-memo",
+      "priority": 30,
+      "filename_contains": ["voice", "memo", "transcript"],
+      "tags": ["memos"],
+      "handler_skill": "voice-memo-processor"
+    },
+    {
+      "name": "screenshot-ocr",
+      "priority": 40,
+      "extension": [".png", ".jpg", ".jpeg"],
+      "tags": ["visual", "ocr"],
+      "move_to": "Screenshots/"
+    }
+  ]
+}
